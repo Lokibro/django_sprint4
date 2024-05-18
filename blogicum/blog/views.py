@@ -2,6 +2,10 @@ from django.db import models
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
+from django.views.generic import (
+    CreateView, DeleteView, DetailView, ListView, UpdateView
+)
+
 from blog.constants import LIMIT_POST
 from blog.models import Category, Post
 
@@ -39,3 +43,12 @@ def category_posts(request, category_slug):
     posts = get_objects(Post).filter(category=category)
     context = {'category': category, 'post_list': posts}
     return render(request, 'blog/category.html', context)
+
+# Работа с пользователями
+
+class ProfileDetailView(DetailView):
+    pass
+
+
+class ProfileUpdateView(UpdateView):
+    pass

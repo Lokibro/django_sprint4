@@ -11,4 +11,8 @@ urlpatterns = [
         'category/<slug:category_slug>/',
         views.category_posts, name='category_posts'
     ),
+
+    # Работа с профилем пользователя
+    path('profile/<slug:username>/', views.ProfileDetailView.as_view(), name='profile'),
+    path('edit_profile/', views.ProfileUpdateView.as_view(), name='edit_profile'),
 ]

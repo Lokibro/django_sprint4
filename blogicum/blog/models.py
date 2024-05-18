@@ -67,6 +67,11 @@ class Post(PubCreateDateModel):
         on_delete=models.SET_NULL,
         null=True
     )
+    image = models.ImageField(
+        verbose_name='Фото',
+        blank=True,
+        upload_to='post_images'
+    )
 
     class Meta:
         default_related_name = 'posts'
