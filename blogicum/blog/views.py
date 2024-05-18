@@ -1,5 +1,7 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse_lazy
 from django.utils import timezone
 
 from django.views.generic import (
@@ -9,6 +11,8 @@ from django.views.generic import (
 from blog.constants import LIMIT_POST
 from blog.models import Category, Post
 
+
+User = get_user_model()
 
 def get_objects(model: models.Model):
     return model.objects.select_related(
@@ -47,8 +51,15 @@ def category_posts(request, category_slug):
 # Работа с пользователями
 
 class ProfileDetailView(DetailView):
-    pass
+    model = User
+    template_name = 'blog/profile.html'
+    slug_url_kwarg = 'username'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(User, username=self.kwargs['username'])
 
 
 class ProfileUpdateView(UpdateView):
-    pass
+    model = User
+    template_name = 'blog/user.html'
+    success_url = reverse_lazy('blog:profile')
