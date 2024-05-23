@@ -2,7 +2,6 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 SECRET_KEY = 'django-insecure-mz=if)=0-3)gle#&x-7o3eeq_nca_0k!6+rty(832zcs#wi)a1'
 
 DEBUG = True
@@ -83,7 +82,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = 'ru-RU'
+LANGUAGE_CODE = 'ru-Ru'
 
 TIME_ZONE = 'Europe/Moscow'
 
@@ -111,3 +110,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 MEDIA_ROOT = BASE_DIR / 'media'
+
+DATETIME_FORMAT = 'd.m.Y H:i'
