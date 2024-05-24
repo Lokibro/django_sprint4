@@ -15,7 +15,6 @@ from blog.constants import LIMIT_POST
 from blog.models import Category, Comment, Post
 
 
-
 User = get_user_model()
 
 
@@ -170,7 +169,6 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
     pk_url_kwarg = 'post_id'
     context_object_name = 'form'
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         form = PostForm()
@@ -210,6 +208,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             'blog:post_detail',
             kwargs={'post_id': self.post.pk}
         )
+
 
 class CommentUpdateView(LoginRequiredMixin, UpdateView):
     model = Comment
