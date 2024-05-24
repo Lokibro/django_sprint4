@@ -2,7 +2,7 @@ from core.models import PubCreateDateModel
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from .constants import LIMIT_WORDS, MAX_LENGTH
+from blog.constants import LIMIT_WORDS, MAX_LENGTH
 
 User = get_user_model()
 
