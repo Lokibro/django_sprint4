@@ -1,8 +1,8 @@
-from core.models import PubCreateDateModel
 from django.contrib.auth import get_user_model
 from django.db import models
 
 from blog.constants import LIMIT_WORDS, MAX_LENGTH
+from core.models import PubCreateDateModel
 
 User = get_user_model()
 
@@ -46,8 +46,10 @@ class Post(PubCreateDateModel):
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
         verbose_name='Дата и время публикации',
-        help_text='Если установить дату и время в будущем — можно делать '
-                  'отложенные публикации.'
+        help_text=(
+            'Если установить дату и время в будущем — можно делать '
+            'отложенные публикации.'
+        )
     )
     author = models.ForeignKey(
         User,
@@ -88,12 +90,24 @@ class Comment(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Пост',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор',
         related_name='comments'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ('created_at',)
+
+    def __str__(self):
+        return f'Комментарий автора {self.author} к публикации "{self.post.title}"'
