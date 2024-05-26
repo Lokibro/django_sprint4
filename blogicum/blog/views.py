@@ -93,7 +93,10 @@ class ProfileDetailView(PostListMixin, MultipleObjectMixin):
             object_list=object_list,
             **kwargs
         )
-        context['profile'] = get_object_or_404(User, username=self.kwargs['username'])
+        context['profile'] = get_object_or_404(
+            User,
+            username=self.kwargs['username']
+        )
         return context
 
 
@@ -121,8 +124,8 @@ class PostDetailView(DetailView):
         post = get_object_or_404(
             Post.objects.select_related('category', 'author'),
             Q(pk=self.kwargs['post_id']),
-            Q(author__username=self.request.user)|Q(
-                Q(is_published=True)&Q(category__is_published=True)
+            Q(author__username=self.request.user) | Q(
+                Q(is_published=True) & Q(category__is_published=True)
             )
         )
         context['form'] = CommentForm()
