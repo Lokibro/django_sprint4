@@ -11,42 +11,15 @@ from django.views.generic.list import MultipleObjectMixin
 
 from blog.constants import LIMIT_POST
 from blog.forms import CommentForm, PostForm, UserForm
+from blog.mixins import CommentMixin, OwnerMixin, PostListMixin
 from blog.models import Category, Comment, Post
 
 
 User = get_user_model()
 
 
-class PostListMixin(ListView):
-    model = Post
-    paginate_by = LIMIT_POST
-
-    def get_queryset(self):
-        return Post.objects.select_related(
-            'category',
-            'author',
-            'location'
-        ).filter(
-            pub_date__lte=timezone.now(),
-            is_published=True,
-            category__is_published=True
-        ).order_by('-pub_date').annotate(comment_count=Count('comments'))
-
-
-class OwnerMixin(LoginRequiredMixin):
-
-    def dispatch(self, request, *args, **kwargs):
-        if self.get_object().author != self.request.user:
-            return redirect(
-                'blog:post_detail',
-                post_id=self.kwargs['post_id']
-            )
-        return super().dispatch(request, *args, *kwargs)
-
-
 class PostsListView(PostListMixin):
     template_name = 'blog/index.html'
-    context_object_name = 'posts'
 
 
 class CategoriesListView(PostListMixin, MultipleObjectMixin):
@@ -63,27 +36,28 @@ class CategoriesListView(PostListMixin, MultipleObjectMixin):
         return context
 
     def get_queryset(self):
+        category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
         return super().get_queryset().filter(
-            category__slug=self.kwargs['category_slug']
+            category__slug=category.slug
         )
 
 
 class ProfileDetailView(PostListMixin, MultipleObjectMixin):
     template_name = 'blog/profile.html'
-    context_object_name = 'profile'
 
     def get_queryset(self):
-        if self.kwargs['username'] == str(self.request.user):
+        user = get_object_or_404(User, username=self.kwargs['username'])
+        if user.username == str(self.request.user):
             posts = Post.objects.select_related(
                 'category',
                 'location',
                 'author'
             ).filter(
-                author__username=self.request.user
+                author__username=user.username
             ).order_by('-pub_date').annotate(comment_count=Count('comments'))
         else:
             posts = super().get_queryset().filter(
-                author__username=self.kwargs['username']
+                author__username=user.username
             )
         return posts
 
@@ -125,11 +99,13 @@ class PostDetailView(DetailView):
             Post.objects.select_related('category', 'author'),
             Q(pk=self.kwargs['post_id']),
             Q(author__username=self.request.user) | Q(
-                Q(is_published=True) & Q(category__is_published=True)
+                Q(is_published=True) &
+                Q(category__is_published=True) &
+                Q(pub_date__lte=timezone.now())
             )
         )
         context['form'] = CommentForm()
-        context['comments'] = Comment.objects.filter(post_id=post.id)
+        context['comments'] = post.comments.all()
         return context
 
 
@@ -198,27 +174,9 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         )
 
 
-class CommentUpdateView(OwnerMixin, UpdateView):
-    model = Comment
-    form_class = CommentForm
-    pk_url_kwarg = 'comment_id'
-    template_name = 'blog/comment.html'
-
-    def get_success_url(self):
-        return reverse(
-            'blog:post_detail',
-            kwargs={'post_id': self.kwargs['post_id']}
-        )
+class CommentUpdateView(CommentMixin, OwnerMixin, UpdateView):
+    pass
 
 
-class CommentDeleteView(OwnerMixin, DeleteView):
-    model = Comment
-    form_class = CommentForm
-    pk_url_kwarg = 'comment_id'
-    template_name = 'blog/comment.html'
-
-    def get_success_url(self):
-        return reverse(
-            'blog:post_detail',
-            kwargs={'post_id': self.kwargs['post_id']}
-        )
+class CommentDeleteView(CommentMixin, OwnerMixin, DeleteView):
+    pass

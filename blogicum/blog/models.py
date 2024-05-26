@@ -111,4 +111,4 @@ class Comment(models.Model):
 
     def __str__(self):
         return (f'Комментарий автора {self.author} '
-                f'к публикации "{self.post.title}"')
+                f'к публикации "{self.post}"')
