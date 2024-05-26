@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
-from django.http import Http404
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -119,11 +118,13 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        post = self.get_object()
-
-        if post.author != self.request.user and not post.is_published:
-            raise Http404
-
+        post = get_object_or_404(
+            Post.objects.select_related('category', 'author'),
+            Q(pk=self.kwargs['post_id']),
+            Q(author__username=self.request.user)|Q(
+                Q(is_published=True)&Q(category__is_published=True)
+            )
+        )
         context['form'] = CommentForm()
         context['comments'] = Comment.objects.filter(post_id=post.id)
         return context
