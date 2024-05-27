@@ -40,7 +40,7 @@ class CategoriesListView(PostListMixin, MultipleObjectMixin):
             slug=self.kwargs['category_slug']
         )
         return super().get_queryset().filter(
-            category__slug=category.slug
+            category=category
         )
 
 
@@ -51,11 +51,11 @@ class ProfileDetailView(PostListMixin, MultipleObjectMixin):
         user = get_object_or_404(User, username=self.kwargs['username'])
         if user.username == str(self.request.user):
             posts = self.get_posts().filter(
-                author__username=user.username
+                author=user
             )
         else:
             posts = super().get_queryset().filter(
-                author__username=user.username
+                author=user
             )
         return posts
 
@@ -107,7 +107,7 @@ class PostDetailView(DetailView):
             )
         )
         context['form'] = CommentForm()
-        context['comments'] = post.comments.all()
+        context['comments'] = post.comments.select_related('author')
         return context
 
 
@@ -126,7 +126,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         )
 
 
-class PostUpdateView(OwnerMixin, UpdateView):
+class PostUpdateView(OwnerMixin, LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
@@ -139,7 +139,7 @@ class PostUpdateView(OwnerMixin, UpdateView):
         )
 
 
-class PostDeleteView(OwnerMixin, DeleteView):
+class PostDeleteView(OwnerMixin, LoginRequiredMixin, DeleteView):
     model = Post
     template_name = 'blog/create.html'
     pk_url_kwarg = 'post_id'
@@ -176,9 +176,19 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         )
 
 
-class CommentUpdateView(CommentMixin, OwnerMixin, UpdateView):
+class CommentUpdateView(
+    OwnerMixin,
+    LoginRequiredMixin,
+    CommentMixin,
+    UpdateView
+):
     pass
 
 
-class CommentDeleteView(CommentMixin, OwnerMixin, DeleteView):
+class CommentDeleteView(
+    OwnerMixin,
+    LoginRequiredMixin,
+    CommentMixin,
+    DeleteView
+):
     pass

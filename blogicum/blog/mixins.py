@@ -10,7 +10,7 @@ from blog.forms import CommentForm
 from blog.models import Comment, Post
 
 
-class CommentMixin():
+class CommentMixin:
     model = Comment
     form_class = CommentForm
     pk_url_kwarg = 'comment_id'
@@ -42,7 +42,7 @@ class PostListMixin(ListView):
         ).order_by('-pub_date')
 
 
-class OwnerMixin(LoginRequiredMixin):
+class OwnerMixin:
 
     def dispatch(self, request, *args, **kwargs):
         if self.get_object().author != self.request.user:
