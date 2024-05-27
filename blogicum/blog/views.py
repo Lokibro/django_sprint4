@@ -35,7 +35,10 @@ class CategoriesListView(PostListMixin, MultipleObjectMixin):
         return context
 
     def get_queryset(self):
-        category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
+        category = get_object_or_404(
+            Category,
+            slug=self.kwargs['category_slug']
+        )
         return super().get_queryset().filter(
             category__slug=category.slug
         )
@@ -94,9 +97,13 @@ class PostDetailView(DetailView):
             Post.objects.select_related('category', 'author'),
             Q(pk=self.kwargs['post_id']),
             Q(author__username=self.request.user) | Q(
-                Q(is_published=True) &
-                Q(category__is_published=True) &
-                Q(pub_date__lte=timezone.now())
+                Q(
+                    is_published=True
+                ) & Q(
+                    category__is_published=True
+                ) & Q(
+                    pub_date__lte=timezone.now()
+                )
             )
         )
         context['form'] = CommentForm()
