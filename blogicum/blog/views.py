@@ -1,15 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Q
-from django.shortcuts import get_object_or_404, redirect
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, ListView, UpdateView
+    CreateView, DeleteView, DetailView, UpdateView
 )
 from django.views.generic.list import MultipleObjectMixin
 
-from blog.constants import LIMIT_POST
 from blog.forms import CommentForm, PostForm, UserForm
 from blog.mixins import CommentMixin, OwnerMixin, PostListMixin
 from blog.models import Category, Comment, Post
@@ -48,13 +47,9 @@ class ProfileDetailView(PostListMixin, MultipleObjectMixin):
     def get_queryset(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
         if user.username == str(self.request.user):
-            posts = Post.objects.select_related(
-                'category',
-                'location',
-                'author'
-            ).filter(
+            posts = self.get_posts().filter(
                 author__username=user.username
-            ).order_by('-pub_date').annotate(comment_count=Count('comments'))
+            )
         else:
             posts = super().get_queryset().filter(
                 author__username=user.username

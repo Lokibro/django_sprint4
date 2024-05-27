@@ -28,15 +28,18 @@ class PostListMixin(ListView):
     paginate_by = LIMIT_POST
 
     def get_queryset(self):
+        return self.get_posts().filter(
+            pub_date__lte=timezone.now(),
+            is_published=True,
+            category__is_published=True
+        ).annotate(comment_count=Count('comments'))
+
+    def get_posts(self):
         return Post.objects.select_related(
             'category',
             'author',
             'location'
-        ).filter(
-            pub_date__lte=timezone.now(),
-            is_published=True,
-            category__is_published=True
-        ).order_by('-pub_date').annotate(comment_count=Count('comments'))
+        ).order_by('-pub_date')
 
 
 class OwnerMixin(LoginRequiredMixin):
